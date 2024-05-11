@@ -1,163 +1,207 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
 
-//Add contact function
-
-void add_contact()
+struct PhoneBook
 {
-    char name[20],mob[20];
+    char Name[20];
+    char Number[12];
+    struct PhoneBook *next;
 
-    FILE *fp;
-    fp=fopen("contact.txt","a+");
+}*Head=NULL;
 
-    system("cls");
-
-    printf("\t*****ADD CONTACT*****\n");
-    printf("\n\tEnter your name  : ");
-    scanf("%s",name);
-
-    printf("\n\tEnter your number: ");
-    scanf("%s",mob);
-
-    fprintf(fp,"%s %s\n",name,mob);
-    fclose(fp);
-
-    printf("\n\tPRESS ANY KEY TO CONTINUE");
-    getch();
-}
-
-//View contact function
-
-void view_all_contact()
+void Add()
 {
-    char name1[20],mob[20];
-
-    FILE *fp;
-    fp=fopen("contact.txt","r");
-
     system("cls");
+    struct PhoneBook *CurrNode, *NewNode;
+    NewNode= (struct PhoneBook*)malloc(sizeof(struct PhoneBook));
 
-    printf("\t*****ALL CONTACTS*****\n");
+    printf("Enter Name: \n");
+    scanf("%s",&NewNode->Name);
+    printf("Enter Number:\n");
+    scanf("%s",&NewNode->Number);
+    NewNode->next=NULL;
 
-    while(fscanf(fp,"%s %s",name1,mob)!=EOF)
+    if(Head==NULL)
     {
-        printf("\n\t NAME  : %s",name1);
-        printf("\n\t Number: %s",mob);
-        printf("\n");
+        Head=NewNode;
     }
-    fclose(fp);
 
-    printf("\n\tPRESS ANY KEY TO CONTINUE");
-    getch();
-}
-
-//Delete contact function
-
-void delete_contact()
-{
-    char name[20],name1[20],mob[20];
-
-    FILE *fp,*fp1;
-    fp=fopen("contact.txt","r+");
-    fp1=fopen("temp.txt","w");
-
-    system("cls");
-
-    printf("\t*****DELETE CONTACT*****\n");
-    printf("\n\tEnter name: ");
-    scanf("%s",name);
-
-    while(fscanf(fp,"%s %s",name1,mob)!=EOF)
+    else
     {
-        if(strcmp(name,name1)==0)
+        CurrNode=Head;
+        while(CurrNode->next!=NULL)
         {
-            continue;
+            CurrNode=CurrNode->next;
         }
-        fprintf(fp1,"%s %s\n",name1,mob);
+        CurrNode->next=NewNode;
     }
-    fclose(fp);
-    fclose(fp1);
-
-    fp=fopen("contact.txt","w");
-    fp1=fopen("temp.txt","r");
-
-    while(fscanf(fp1,"%s %s",name1,mob)!=EOF)
-    {
-        fprintf(fp,"%s %s\n",name1,mob);
-    }
-    fclose(fp);
-    fclose(fp1);
-
-    remove("temp.txt");
-
-    printf("\n\tPRESS ANY KEY TO CONTINUE");
-    getch();
 }
 
-//Search contact function
-
-void search_contact()
+void Search()
 {
-    char name[20],name1[20],mob[20];
+    struct PhoneBook *display=Head;
+    int Count=0;
+    char NAME[20],Number[15];
 
-    FILE *fp;
-    fp=fopen("contact.txt","r");
+Start:
 
     system("cls");
+    printf("\n\tHow can do you want to search?\n");
+    printf("\n\t1. by Name\n\t2. by Number\n\t3. Main Menu\n");
 
-    printf("\t*****SEARCH CONTACT*****\n");
-    printf("\n\t Enter Name :-");
-    scanf("%s",name);
-
-    while(fscanf(fp,"%s %s",name1,mob)!=EOF)
+    switch(getch())
     {
-        if(strcmp(name,name1)==0)
-        {
-            printf("\n\tNAME  : %s\n",name1);
-            printf("\n\tNumber: %s\n",mob);
-        }
-    }
-    fclose(fp);
+    case '1':
+    {
+        printf("\nEnter Name to search: \n");
+        scanf("%s",&NAME);
 
-    printf("\n\tPRESS ANY KEY TO CONTINUE");
+        while(display!=NULL)
+        {
+            if(strcmp(display->Name,NAME)==0)
+            {
+                Count++;
+                printf("%d.\n\tName: %s",Count,display->Name);
+                printf("\n\tNumber: %s\n\n",display->Number);
+            }
+            display=display->next;
+        }
+        break;
+    }
+
+    case '2':
+    {
+        printf("\nEnter Number to search:\n");
+        scanf("%s",&Number);
+
+        while(display!=NULL)
+        {
+            if(strcmp(display->Number,Number)==0)
+            {
+                Count++;
+                printf("%d.\n\tName: %s",Count,display->Name);
+                printf("\n\tNumber: %s\n\n",display->Number);
+            }
+            display=display->next;
+        }
+        break;
+    }
+
+    case '3':
+    {
+        goto End;
+        break;
+    }
+
+    default:
+    {
+        printf("Wrong Input !\n");
+        goto Start;
+        break;
+    }
+}
+
+End:
+    printf("\n\nPress any key for Main Menu.\n");
     getch();
 }
 
-//Main function  //PHONEBOOK HOME
+void Delete(struct PhoneBook *CurrNode)
+{
+    system("cls");
+    char Name[20];
+    struct PhoneBook *Prev=NULL;
+    printf("\nTo Delete a Contact Please enter Name:\n");
+    scanf("%s",&Name);
+
+    while(CurrNode!=NULL)
+    {
+        if(strcmp(CurrNode->Name,Name)==0)
+        {
+            break;
+        }
+        Prev=CurrNode;
+        CurrNode=CurrNode->next;
+    }
+
+    if(CurrNode==NULL)
+    {
+        printf("\n\nNot Found!\n");
+    }
+
+    else if(Prev==NULL)
+    {
+        Head=CurrNode->next;
+        free(CurrNode);
+        printf("\n%s is deleted.\n",Name);
+    }
+
+    else
+    {
+        Prev->next=CurrNode->next;
+        free(CurrNode);
+        printf("\n%s is deleted.\n",Name);
+    }
+
+    printf("\n\nPress any key for Main Menu.\n");
+    getch();
+}
+
+void ViewAll(struct PhoneBook *display)
+{
+    system("cls");
+    int Count=0;
+
+    printf("\t\tAll Contacts:\n\n");
+
+    while(display!=NULL)
+    {
+        Count++;
+        printf("%d.\n\tName: %s",Count,display->Name);
+        printf("\n\tNumber: %s\n\n",display->Number);
+        display=display->next;
+    }
+
+    if(Head==NULL)
+    {
+        printf("PhoneBook is Empty!");
+    }
+
+    printf("\n\nPress any key for Main Menu.\n");
+    getch();
+}
 
 int main()
 {
-    system("COLOR 5f");
-
+    system("COLOR 2f");
     char Pass[20],Hint[20];
 
-    printf("\n\tPhoneBook Application By SAKIBUL HASAN RAFI! (Press any key to Start)\n\t");
+    printf("\n\t\t\t\tWelcome to PhoneBook application.! (press any key to start)\n\t");
     getch();
 
 Password:
 
     system("cls");
-
-    printf("\n\tPhoneBook Application By SAKIBUL HASAN RAFI!\n\n\tEnter Your Choice: \n");
+    printf("\n\t\t\t\t\tPhoneBook HOME\n\n\tEnter Your Choice:");
     printf("\n\t1. Create Password\t2. Forgot Password?\t3. Login\t4. Exit\n");
 
     switch(getch())
     {
-    case '1'://Create password
+    case '1':
     {
-        printf("\nEnter New Password:\n");
+        printf("\nEnter New Password: \n");
         gets(Pass);
-
-        printf("\nEnter Hints for Security:\n");
+        printf("\nEnter Hints for Security: \n");
         gets(Hint);
 
         goto Password;
         break;
     }
-    case '2'://Forgot password
+
+    case '2':
     {
         char Reset[20];
-
         printf("\nEnter Hints for Reset Password:\n");
         gets(Reset);
 
@@ -165,21 +209,22 @@ Password:
         {
             printf("\nEnter New Password:\n");
             gets(Pass);
-
             printf("\nPassword has been Changed Successfully.\n");
         }
+
         else
         {
             printf("\nYou Need to Remember Hints For Reseting Password!\n");
             getch();
         }
+
         goto Password;
         break;
     }
-    case '3'://Login
+
+    case '3':
     {
         char Login[20];
-
         printf("\nEnter Password to Login:\n");
         gets(Login);
 
@@ -187,14 +232,17 @@ Password:
         {
             goto Menu;
         }
+
         else
         {
+            printf("Wrong Password!!! Retry again.");
+            getch();
             goto Password;
         }
         break;
-
     }
-    case '4'://Exit
+
+    case '4':
     {
         goto End;
         break;
@@ -207,64 +255,66 @@ Password:
 
     }
 
-Menu://PHONEBOOK MAIN MENU
+Menu:
 
     system("cls");
-
-    printf("\n\tPhoneBook Application By SAKIBUL HASAN RAFI!\n\n\tEnter Your Choice: ");
+    printf("\n\t\t\t\t\tPhoneBook Main MENU\n\n\tEnter Your Choice:");
     printf("\n\t1. Create\t2. Search\n\t3. Delete\t4. View All\n\t5. Exit \t6. LogOut\n");
 
     switch(getch())
     {
     case '1':
     {
-        add_contact();
+        Add();
         goto Menu;
         break;
     }
+
     case '2':
     {
-        search_contact();
+        Search();
         goto Menu;
         break;
     }
+
     case '3':
     {
-        delete_contact();
+        Delete(Head);
         goto Menu;
         break;
     }
+
     case '4':
     {
-        view_all_contact();
+        ViewAll(Head);
         goto Menu;
         break;
     }
+
     case '5':
     {
         goto End;
         break;
     }
+
     case '6':
     {
         goto Password;
         break;
     }
+
     default:
     {
         goto Menu;
         break;
     }
-    }
+}
 
 End:
 
     system("cls");
-
     printf("\n\t\t\tThank you for reviewing my Application.");
     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t");
-    printf("@ Copyright 2022 || All Rights Reserved By SAKIBUL HASAN RAFI\n");
-
+    printf("@ Copyright 2022 || All Rights Reserved By SAKIBUL_HASAN_RAFI...!\n");
     return 0;
 }
-//END OF PHONEBOOK
